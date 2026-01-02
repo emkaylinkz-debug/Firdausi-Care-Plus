@@ -60,7 +60,7 @@ export default function HomePage() {
           </h1>
           <p>
             Know your budget before you leave home. We provide real-time updates
-            on medicine availability in store.
+            on the available medicine in store.
           </p>
           <Link href="/catalog" className={styles.btnPrimary}>
             Browse Full Catalog

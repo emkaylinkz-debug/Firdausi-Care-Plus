@@ -14,7 +14,7 @@ export default function AboutPage() {
       <div className={styles.container}>
         {/* Title Section */}
         <div className={styles.headerTitle}>
-          <h1>About Firdausi Pharmacy</h1>
+          <h1>About Firdausi Care Plus </h1>
           <p>Dedicated to health, integrity, and community service.</p>
         </div>
 
@@ -25,10 +25,10 @@ export default function AboutPage() {
               <UserCheck color="#059669" /> Meet Our Pharmacist
             </h2>
             <p>
-              Pharm. Firdausi is a dedicated healthcare professional with a
+              Pharm. Safiya Muhammad is a dedicated healthcare professional with a
               passion for patient well-being. With years of experience in
               pharmaceutical care, she founded{" "}
-              <strong>Firdausi Pharmacy Enterprise</strong>
+              <strong>Firdausi Care Plus </strong>
               to bridge the gap between quality medication and community
               accessibility.
             </p>
@@ -42,14 +42,14 @@ export default function AboutPage() {
           <div className={styles.imageCard}>
             <Image
               src="/firdausi.png"
-              alt="Pharm. Firdausi"
+              alt="Pharm. Safiya"
               width={400}
               height={400}
               className={styles.displayImage}
               priority
             />
             <div className={styles.caption}>
-              Pharm. Firdausi - Lead Pharmacist
+              Pharm. Safiya - Lead Pharmacist
             </div>
           </div>
         </section>
@@ -72,7 +72,7 @@ export default function AboutPage() {
               <Store color="#059669" /> Our Local Mission
             </h2>
             <p>
-              Located in the heart of our community, Firdausi Pharmacy is more
+              Located in the heart of our community, Firdausi Care Plus is more
               than just a shop. We are a technology-forward health hub.
             </p>
             <p style={{ marginTop: "15px" }}>
@@ -89,7 +89,7 @@ export default function AboutPage() {
               <Award color="#059669" /> Fully Licensed & Regulated
             </h2>
             <p>
-              Your safety is our priority. Firdausi Pharmacy operates under
+              Your safety is our priority. Firdausi Care Plus operates under
               strict regulatory guidelines.
             </p>
           </div>

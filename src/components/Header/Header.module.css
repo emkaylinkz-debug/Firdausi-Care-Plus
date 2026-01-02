@@ -115,5 +115,50 @@
         display: none;
     }
 
-    /* We will add a mobile menu later */
+}
+
+/* Add to Header.module.css */
+
+.menuButton {
+    display: none;
+    background: none;
+    border: none;
+    color: #059669;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .menuButton {
+        display: block;
+        order: 2;
+    }
+
+    .statusBadge {
+        display: none;
+        /* Hide status badge on small mobile to save space */
+    }
+
+    .navLinks {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background: white;
+        padding: 20px;
+        border-bottom: 2px solid #059669;
+        transform: translateY(-150%);
+        transition: transform 0.3s ease-in-out;
+        z-index: -1;
+    }
+
+    .navActive {
+        transform: translateY(0);
+    }
+
+    .logoText {
+        font-size: 1.1rem;
+        /* Smaller logo for mobile */
+    }
 }

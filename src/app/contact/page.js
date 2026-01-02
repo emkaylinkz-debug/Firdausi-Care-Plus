@@ -26,8 +26,8 @@ export default function ContactPage() {
                 <MapPin size={20} /> Our Location
               </h4>
               <p>
-                Community Market Road, Block B, Suite 4<br />
-                Your City, State
+                Al-Yaqeen Academy Road, Malali New layout <br />
+                Kaduna, State.
               </p>
             </div>
 
@@ -36,9 +36,9 @@ export default function ContactPage() {
                 <Phone size={20} /> Phone & WhatsApp
               </h4>
               <p>
-                Main: +234 800 000 0000
+                Main: +234 803 075 1532
                 <br />
-                WhatsApp: +234 800 000 0000
+                WhatsApp: +234 803 227 5203
               </p>
             </div>
 
@@ -47,14 +47,14 @@ export default function ContactPage() {
                 <Mail size={20} /> Email Us
               </h4>
               <p>
-                info@firdausipharmacy.com
+                info: emkaylinkz@gmail.com
                 <br />
-                support@firdausipharmacy.com
+                support: emkaylinkz@gmail.com
               </p>
             </div>
 
             <a
-              href="https://wa.me/2348000000000"
+              href="https://wa.me/2348032275203"
               style={{
                 display: "flex",
                 alignItems: "center",

@@ -1,8 +1,12 @@
+"use client";
+import { useState } from "react"; // Added useState
 import Link from "next/link";
 import styles from "./Header.module.css";
-import { Pill } from "lucide-react";
+import { Pill, Menu, X } from "lucide-react"; // Added Menu and X icons
 
 export default function Header({ isOpen, closeReason }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -12,12 +16,32 @@ export default function Header({ isOpen, closeReason }) {
           <span className={styles.logoText}>Firdausi Care Plus</span>
         </Link>
 
-        {/* Navigation Links */}
-        <nav className={styles.navLinks}>
-          <Link href="/">Home</Link>
-          <Link href="/catalog">Products</Link>
-          <Link href="/about">About Us</Link>
-          <Link href="/contact">Contact</Link>
+        {/* Hamburger Button - Only visible on mobile */}
+        <button
+          className={styles.menuButton}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+
+        {/* Navigation Links - Toggle active class on mobile */}
+        <nav
+          className={`${styles.navLinks} ${
+            isMobileMenuOpen ? styles.navActive : ""
+          }`}
+        >
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+            Home
+          </Link>
+          <Link href="/catalog" onClick={() => setIsMobileMenuOpen(false)}>
+            Products
+          </Link>
+          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)}>
+            About Us
+          </Link>
+          <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+            Contact
+          </Link>
         </nav>
 
         {/* Live Status Indicator */}
@@ -31,7 +55,9 @@ export default function Header({ isOpen, closeReason }) {
               isOpen ? styles.dotOpen : styles.dotClosed
             }`}
           ></span>
-          {isOpen ? "OPEN NOW" : `CLOSED: ${closeReason}`}
+          <span className={styles.statusText}>
+            {isOpen ? "OPEN NOW" : `CLOSED: ${closeReason}`}
+          </span>
         </div>
       </div>
     </header>
