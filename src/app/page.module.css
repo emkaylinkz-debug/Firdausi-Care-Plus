@@ -1,141 +1,198 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
-}
-
 .main {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+    background-color: #ffffff;
+    min-height: 100vh;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+.container {
+    max-width: 1400px;
+    /* Wider container for "whole page" feel */
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+/* Hero Section: Full Viewport Impact */
+.hero {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(rgba(6, 95, 70, 0.8), rgba(13, 148, 136, 0.7)),
+        url('https://images.unsplash.com/photo-1587854685352-c54c261d5b39?auto=format&fit=crop&q=80&w=2000');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: white;
+    padding: 40px 20px;
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+.hero h1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 900;
+    margin-bottom: 20px;
+    letter-spacing: -2px;
+    line-height: 1.1;
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+.hero p {
+    font-size: 1.25rem;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    opacity: 0.95;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+.btnPrimary {
+    background: #ffffff;
+    color: #065f46;
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-weight: 800;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+.btnPrimary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+/* Health Awareness Card */
+.awarenessCard {
+    background: white;
+    border-left: 8px solid #f43f5e;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    margin: -60px auto 0;
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    max-width: 900px;
+    color:#035941
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+/* Product Section */
+.section {
+    padding: 10px 0;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 50px;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.sectionHeader h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+/* Full Image Cards */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+}
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+.card {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+    border: 1px solid #f1f5f9;
+}
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+.card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.2);
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.cardImage {
+    height: 400px;
+    /* Increased height for "whole page" look */
+    width: 100%;
+    background: #f8fafc;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardBody {
+    padding: 30px;
+}
+
+.categoryBadge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #0d9488;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.cardBody h4 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #0f172a;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.priceTag {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: #059669;
+}
+
+.stockBadge {
+    background: #dcfce7;
+    color: #15803d;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Footer Improvements */
+.footer {
+    background: #020617;
+    color: #94a3b8;
+    padding: 100px 0 50px;
+}
+
+.footerTitle {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    font-weight: 800;
+}
+
+.transportNote {
+    background: #064e3b;
+    padding: 30px;
+    border-radius: 20px;
+    color: #d1fae5;
+    border: 1px solid #065f46;
+}
+
+.loaderCenter {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding: 100px 0;
 }

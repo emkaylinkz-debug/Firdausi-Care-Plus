@@ -1,0 +1,112 @@
+.main {
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+/* Info Cards on the Left */
+.contactInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.infoCard {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.infoCard h4 {
+    color: #065f46;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.infoCard p {
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Form Styling on the Right */
+.formCard {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: #059669;
+    background-color: #f0fdf4;
+}
+
+.textarea {
+    height: 120px;
+    resize: vertical;
+}
+
+.submitBtn {
+    width: 100%;
+    background-color: #059669;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submitBtn:hover {
+    background-color: #047857;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

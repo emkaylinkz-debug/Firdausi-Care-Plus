@@ -1,0 +1,187 @@
+.main {
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.catalogHero {
+    background: linear-gradient(to bottom, #065f46, #0d9488);
+    color: white;
+    padding: 80px 0 120px;
+    text-align: center;
+    
+}
+
+.catalogHero h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    
+}
+
+.searchBar {
+    max-width: 700px;
+    margin: 40px auto -150px;
+    position: relative;
+    z-index: 10;
+
+}
+
+.searchBar input {
+    width: 100%;
+    padding: 22px 30px 22px 60px;
+    border-radius: 50px;
+    border: none;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    font-size: 1.1rem;
+    outline: none;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* Filters */
+.filterSection {
+    margin-top: 100px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filterLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.categoryList {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.catBtn,
+.catBtnActive {
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.catBtn {
+    background: white;
+    color: #64748b;
+}
+
+.catBtnActive {
+    background: #059669;
+    color: white;
+    border-color: #059669;
+}
+
+/* Grid and Cards */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    padding-bottom: 80px;
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+}
+
+.cardImage {
+    height: 280px;
+    position: relative;
+    background: #f1f5f9;
+}
+
+.placeholderImg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #cbd5e1;
+}
+
+.cardBody {
+    padding: 25px;
+}
+
+.categoryBadge {
+    font-size: 0.7rem;
+    color: #059669;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.cardBody h4 {
+    font-size: 1.3rem;
+    color: #1e293b;
+    margin-bottom: 15px;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.priceTag {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #065f46;
+}
+
+.inStock {
+    background: #dcfce7;
+    color: #15803d;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.outStock {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.loaderCenter,
+.noResults {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 100px 0;
+    color: #64748b;
+}

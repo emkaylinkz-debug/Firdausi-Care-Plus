@@ -1,0 +1,116 @@
+.dashboard {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.pdfBtn {
+    background: #0f172a;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.statCard {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.mainGrid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.form select,
+.form input {
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.submitBtn {
+    background: #059669;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tableWrapper {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #f1f5f9;
+    color: #64748b;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.loader {
+    display: flex;
+    justify-content: center;
+    padding: 100px;
+}
+
+@media (max-width: 900px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+    }
+}

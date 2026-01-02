@@ -1,0 +1,119 @@
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e2e8f0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.logoArea {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.logoText {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #059669;
+    /* Emerald 600 */
+    letter-spacing: -0.5px;
+}
+
+.navLinks {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.navLinks a {
+    text-decoration: none;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.navLinks a:hover {
+    color: #059669;
+}
+
+/* Status Indicator */
+.statusBadge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.open {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.closed {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.dot {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+}
+
+.dotOpen {
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: pulse 2s infinite;
+}
+
+.dotClosed {
+    background: #ef4444;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+}
+
+@media (max-width: 768px) {
+    .navLinks {
+        display: none;
+    }
+
+    /* We will add a mobile menu later */
+}
