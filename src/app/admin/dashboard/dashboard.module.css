@@ -13,6 +13,9 @@
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
 }
 
 .logo {
@@ -23,7 +26,6 @@
     text-align: center;
 }
 
-/* NAVIGATION */
 .adminNav {
     display: flex;
     flex-direction: column;
@@ -100,8 +102,8 @@
     resize: none;
 }
 
-.closeBtn,
-.openBtn {
+.closeBtn {
+    background: #ef4444;
     width: 100%;
     padding: 10px;
     border: none;
@@ -111,30 +113,24 @@
     font-weight: 600;
 }
 
-.closeBtn {
-    background: #ef4444;
-}
-
 .openBtn {
     background: #10b981;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
 }
 
 /* MAIN CONTENT */
 .content {
     flex: 1;
     padding: 40px;
-    overflow-y: auto;
+    max-width: calc(100vw - 280px);
 }
 
-.loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-weight: 600;
-}
-
-/* STATS */
 .stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -163,25 +159,111 @@
     margin: 0;
 }
 
-/* PRODUCT FORM */
+/* TABLE RESPONSIVENESS */
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scroll for mobile */
+    border-radius: 8px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+    /* Forces scrolling on very small screens */
+}
+
+.table th {
+    text-align: left;
+    padding: 14px;
+    border-bottom: 2px solid #f1f5f9;
+    color: #64748b;
+    font-size: 0.85rem;
+    background: #fff;
+}
+
+.table td {
+    padding: 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.boldText {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.priceText {
+    color: #059669;
+    font-weight: 800;
+}
+
+.lowStock {
+    color: #ef4444;
+    font-weight: 900;
+    background: #fee2e2;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* BUTTONS */
+.resetBtn {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+.resetBtn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.actionGroup {
+    display: flex;
+    gap: 8px;
+}
+
+.editBtn {
+    color: #0284c7;
+    background: #e0f2fe;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.delBtn {
+    color: #ef4444;
+    background: #fee2e2;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+/* FORM */
 .prodForm {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
 }
 
-.prodForm input,
-.prodForm select,
-.prodForm textarea {
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.9rem;
-}
-
 .prodForm textarea {
     grid-column: span 3;
     min-height: 80px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
 }
 
 .formButtons {
@@ -212,108 +294,24 @@
     cursor: pointer;
 }
 
-/* LIST SECTION */
-.listSection {
-    background: white;
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.listHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.searchBox {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.searchBox input {
-    padding: 10px 10px 10px 40px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    width: 250px;
-}
-
-.searchBox svg {
-    position: absolute;
-    left: 12px;
-    color: #94a3b8;
-}
-
-/* TABLE */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table th {
-    text-align: left;
-    padding: 14px;
-    border-bottom: 2px solid #f1f5f9;
-    color: #64748b;
-    font-size: 0.85rem;
-}
-
-.table td {
-    padding: 14px;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 0.9rem;
-}
-
-.productThumb {
-    border-radius: 6px;
-    object-fit: cover;
-    background: #f1f5f9;
-}
-
-.editBtn {
-    color: #0284c7;
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-right: 10px;
-}
-
-.delBtn {
-    color: #ef4444;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-/* IMAGE UPLOAD UI */
-.fileInput {
-    display: none;
-}
-
-.fileLabel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: #f8fafc;
-    border: 1px dashed #cbd5e1;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-/* RESPONSIVE */
+/* MOBILE RESPONSIVE */
 @media (max-width: 1024px) {
-    .prodForm {
-        grid-template-columns: repeat(2, 1fr);
+    .sidebar {
+        width: 80px;
+        padding: 20px 10px;
     }
 
-    .prodForm textarea,
-    .formButtons {
-        grid-column: span 2;
+    .logo,
+    .statusHeader,
+    .storeToggleCard textarea,
+    .navBtn span,
+    .logoutBtn span {
+        display: none;
+    }
+
+    .content {
+        max-width: calc(100vw - 80px);
+        padding: 20px;
     }
 }
 
@@ -324,7 +322,19 @@
 
     .sidebar {
         width: 100%;
-        padding: 20px;
+        height: auto;
+        position: relative;
+        padding: 15px;
+    }
+
+    .adminNav {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .content {
+        max-width: 100vw;
+        padding: 15px;
     }
 
     .stats {
@@ -338,5 +348,11 @@
     .prodForm textarea,
     .formButtons {
         grid-column: span 1;
+    }
+
+    .listHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
     }
 }

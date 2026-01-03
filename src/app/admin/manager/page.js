@@ -1,197 +1,176 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; // Added useCallback
 import { supabase } from "@/lib/supabase";
 import styles from "./manager.module.css";
-import {
-  TrendingUp,
-  PlusCircle,
-  FileText,
-  Loader2,
-  CheckCircle,
-} from "lucide-react";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { Search, ShoppingCart, RotateCcw, Printer, LogOut } from "lucide-react";
 
-export default function StaffManager() {
+export default function SalesManager() {
   const [products, setProducts] = useState([]);
   const [sales, setSales] = useState([]);
-
-  // FIX 1: Start loading as 'true' so we don't call setLoading(true) in the effect
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sellQuantities, setSellQuantities] = useState({});
 
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [saleQty, setSaleQty] = useState(1);
-
-  // FIX 2: Define and call the fetcher inside the useEffect
-  useEffect(() => {
-    async function loadDashboardData() {
-      try {
-        const { data: prodData } = await supabase.from("products").select("*");
-        const { data: salesData } = await supabase
+  // FIX: Define loadData BEFORE useEffect
+  // Use useCallback to prevent unnecessary re-renders
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [prodRes, salesRes] = await Promise.all([
+        supabase.from("products").select("*").order("name"),
+        supabase
           .from("sales")
           .select("*")
-          .order("created_at", { ascending: false });
-
-        setProducts(prodData || []);
-        setSales(salesData || []);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setLoading(false); // Turn off loading only after data arrives
-      }
+          .order("created_at", { ascending: false }),
+      ]);
+      setProducts(prodRes.data || []);
+      setSales(salesRes.data || []);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
     }
-
-    loadDashboardData();
   }, []);
 
-  // RECORD A SALE
-  async function handleSale(e) {
-    e.preventDefault();
-    const product = products.find((p) => p.id === parseInt(selectedProduct));
+  useEffect(() => {
+    loadData();
+  }, [loadData]); // This is now safe and error-free
 
-    if (!product || product.quantity < saleQty) {
-      alert("Insufficient Stock!");
-      return;
-    }
+  const handleQtyChange = (productId, val) => {
+    setSellQuantities({ ...sellQuantities, [productId]: parseInt(val) || 1 });
+  };
 
-    const totalPrice = product.price * saleQty;
+  const handleSell = async (product) => {
+    const qty = sellQuantities[product.id] || 1;
+    if (product.quantity < qty) return alert("Not enough stock!");
 
     const { error: saleError } = await supabase.from("sales").insert([
       {
+        product_id: product.id,
         product_name: product.name,
-        quantity: saleQty,
-        total_price: totalPrice,
+        quantity: qty,
+        total_price: product.price * qty,
       },
     ]);
 
-    const { error: updateError } = await supabase
-      .from("products")
-      .update({ quantity: product.quantity - saleQty })
-      .eq("id", product.id);
-
-    if (!saleError && !updateError) {
-      alert("Sale Recorded!");
-      // Refresh the page data
-      const { data: prodData } = await supabase.from("products").select("*");
-      const { data: salesData } = await supabase
-        .from("sales")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setProducts(prodData || []);
-      setSales(salesData || []);
+    if (!saleError) {
+      await supabase
+        .from("products")
+        .update({ quantity: product.quantity - qty })
+        .eq("id", product.id);
+      loadData();
+      alert("Sold successfully!");
     }
-  }
+  };
 
-  // PDF GENERATION
-  function generatePDF() {
-    const doc = new jsPDF();
-    doc.text("Firdausi Care Plus - Daily Sales Report", 14, 15);
-    const tableRows = sales.map((s) => [
-      new Date(s.created_at).toLocaleDateString(),
-      s.product_name,
-      s.quantity,
-      `N${s.total_price.toLocaleString()}`,
-    ]);
-    doc.autoTable({
-      head: [["Date", "Product", "Qty", "Total"]],
-      body: tableRows,
-      startY: 25,
-    });
-    doc.save(`sales_report.pdf`);
-  }
+  const handleRefund = async (sale) => {
+    if (!confirm("Process refund?")) return;
+    const { data: prod } = await supabase
+      .from("products")
+      .select("quantity")
+      .eq("id", sale.product_id)
+      .single();
+    if (prod) {
+      await supabase
+        .from("products")
+        .update({ quantity: prod.quantity + sale.quantity })
+        .eq("id", sale.product_id);
+      await supabase.from("sales").delete().eq("id", sale.id);
+      loadData();
+    }
+  };
 
-  const totalRevenue = sales.reduce((sum, s) => sum + s.total_price, 0);
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  if (loading)
-    return (
-      <div className={styles.loader}>
-        <Loader2 className="animate-spin" size={40} color="#059669" />
-      </div>
-    );
+  if (loading) return <div className={styles.loader}>Loading...</div>;
 
   return (
-    <div className={styles.dashboard}>
+    <div className={styles.container}>
       <header className={styles.header}>
-        <h1>Staff Manager Dashboard</h1>
-        <button onClick={generatePDF} className={styles.pdfBtn}>
-          <FileText size={18} /> Download Sales PDF
+        <h2>Sales Manager</h2>
+        <button onClick={() => window.print()} className={styles.printBtn}>
+          <Printer size={18} /> Print (PDF)
         </button>
       </header>
 
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <TrendingUp color="#059669" />
-          <div>
-            <p>Total Revenue</p>
-            <h3>₦{totalRevenue.toLocaleString()}</h3>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <CheckCircle color="#0284c7" />
-          <div>
-            <p>Total Sales</p>
-            <h3>{sales.length} Transactions</h3>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.mainGrid}>
-        <div className={styles.card}>
-          <h3>
-            <PlusCircle size={20} /> Record New Sale
-          </h3>
-          <form onSubmit={handleSale} className={styles.form}>
-            <label>Select Medicine</label>
-            <select
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              required
-            >
-              <option value="">Choose item...</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} (Stock: {p.quantity})
-                </option>
-              ))}
-            </select>
-            <label>Quantity Sold</label>
-            <input
-              type="number"
-              value={saleQty}
-              onChange={(e) => setSaleQty(e.target.value)}
-              min="1"
-              required
-            />
-            <button type="submit" className={styles.submitBtn}>
-              Complete Sale
-            </button>
-          </form>
-        </div>
-
-        <div className={styles.card}>
-          <h3>Recent Sales History</h3>
+      <main className={styles.mainGrid}>
+        <section className={styles.card}>
+          <h3>Inventory</h3>
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Item</th>
+                  <th>#</th> {/* Row Number Header */}
+                  <th>Product</th>
+                  <th>Stock</th>
                   <th>Qty</th>
-                  <th>Price</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {sales.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.product_name}</td>
-                    <td>{s.quantity}</td>
-                    <td>₦{s.total_price.toLocaleString()}</td>
+                {filteredProducts.map((p, index) => (
+                  <tr key={p.id}>
+                    <td>{index + 1}</td> {/* This gives you the row number */}
+                    <td>{p.name}</td>
+                    <td>{p.quantity}</td>
+                    <td>
+                      <input
+                        type="number"
+                        className={styles.qtyInput}
+                        value={sellQuantities[p.id] || 1}
+                        onChange={(e) => handleQtyChange(p.id, e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleSell(p)}
+                        className={styles.sellBtn}
+                      >
+                        Sell
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </section>
+
+        <section className={styles.card}>
+          <h3>Sales History</h3>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.map((s, index) => (
+                  <tr key={s.id}>
+                    <td>{index + 1}</td>
+                    <td>{s.product_name}</td>
+                    <td>₦{s.total_price.toLocaleString()}</td>
+                    <td>
+                      <button
+                        onClick={() => handleRefund(s)}
+                        className={styles.refundBtn}
+                      >
+                        <RotateCcw size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

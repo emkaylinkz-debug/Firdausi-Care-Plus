@@ -99,7 +99,7 @@
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 40px;
+    gap: 20px;
 }
 
 .card {
@@ -117,7 +117,7 @@
 }
 
 .cardImage {
-    height: 400px;
+    height: 250px;
     /* Increased height for "whole page" look */
     width: 100%;
     background: #f8fafc;

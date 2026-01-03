@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Image from "next/image"; // Import Next.js Image component
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import styles from "./dashboard.module.css";
 import {
@@ -13,7 +13,9 @@ import {
   DollarSign,
   Save,
   LogOut,
+  RefreshCcw,
   Image as ImageIcon,
+  AlertCircle,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -41,7 +43,7 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState(null);
 
   /* ===============================
-      DATA LOADER (Optimized)
+      DATA LOADER
   ================================ */
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -67,10 +69,66 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData();
-  }, [loadData]); // Added loadData to dependencies
+  }, [loadData]);
 
   /* ===============================
-      ACTIONS (EDIT & DELETE)
+      SALE & STOCK LOGIC
+  ================================ */
+  // Function to reset all sales records
+  const handleResetSales = async () => {
+    const confirmation = confirm(
+      "CRITICAL: This will permanently delete ALL sales records. This cannot be undone. Continue?"
+    );
+
+    if (confirmation) {
+      setLoading(true);
+      try {
+        // Use .not("id", "is", null) to target every row in a UUID-based table
+        const { error } = await supabase
+          .from("sales")
+          .delete()
+          .not("id", "is", null);
+
+        if (error) throw error;
+
+        alert("Sales records cleared successfully.");
+        await loadData(); // Refresh the UI
+      } catch (error) {
+        console.error("Delete error:", error.message);
+        alert("Failed to clear sales: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Logic to handle a sale and reduce quantity
+  const handleManualSale = async (product, qtySold) => {
+    if (product.quantity < qtySold) return alert("Not enough stock!");
+
+    // 1. Record the Sale
+    const { error: saleError } = await supabase.from("sales").insert([
+      {
+        product_id: product.id,
+        product_name: product.name,
+        quantity: qtySold,
+        total_price: product.price * qtySold,
+      },
+    ]);
+
+    if (!saleError) {
+      // 2. Reduce Product Quantity
+      await supabase
+        .from("products")
+        .update({ quantity: product.quantity - qtySold })
+        .eq("id", product.id);
+
+      loadData();
+    }
+  };
+
+  /* ===============================
+      PRODUCT ACTIONS
   ================================ */
   const handleEditProduct = (product) => {
     setEditingId(product.id);
@@ -86,15 +144,12 @@ export default function AdminDashboard() {
   };
 
   const deleteProduct = async (id) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    if (confirm("Delete this product?")) {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (!error) loadData();
     }
   };
 
-  /* ===============================
-      PRODUCT SAVE
-  ================================ */
   async function handleSaveProduct(e) {
     e.preventDefault();
     let imageUrl = formData.image_url;
@@ -145,9 +200,6 @@ export default function AdminDashboard() {
     window.location.href = "/login";
   };
 
-  /* ===============================
-      DERIVED VALUES
-  ================================ */
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -163,7 +215,6 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.adminContainer}>
-      {/* SIDEBAR */}
       <aside className={styles.sidebar}>
         <div className={styles.logo}>Firdausi Admin</div>
         <nav className={styles.adminNav}>
@@ -219,7 +270,6 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className={styles.content}>
         <header className={styles.stats}>
           <div className={styles.statItem}>
@@ -232,7 +282,7 @@ export default function AdminDashboard() {
           <div className={styles.statItem}>
             <DollarSign color="#10b981" />
             <div>
-              <span>Total Sales</span>
+              <span>Total Revenue</span>
               <h3>₦{totalSalesRevenue.toLocaleString()}</h3>
             </div>
           </div>
@@ -307,17 +357,7 @@ export default function AdminDashboard() {
                   {editingId && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingId(null);
-                        setFormData({
-                          name: "",
-                          price: "",
-                          quantity: "",
-                          category: "",
-                          description: "",
-                          image_url: "",
-                        });
-                      }}
+                      onClick={() => setEditingId(null)}
                       className={styles.cancelBtn}
                     >
                       Cancel
@@ -338,89 +378,100 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map((p) => (
-                    <tr key={p.id}>
-                      <td>
-                        <div className={styles.productThumbWrapper}>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Image</th>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Stock</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.map((p) => (
+                      <tr key={p.id}>
+                        <td>
                           <Image
                             src={p.image_url || "/placeholder.png"}
                             alt={p.name}
-                            className={styles.productThumb}
                             width={40}
                             height={40}
-                            style={{ objectFit: "cover" }}
+                            className={styles.productThumb}
                           />
-                        </div>
-                      </td>
-                      <td>{p.name}</td>
-                      <td>{p.category}</td>
-                      <td>₦{p.price.toLocaleString()}</td>
-                      <td>{p.quantity}</td>
-                      <td>
-                        <button
-                          onClick={() => handleEditProduct(p)}
-                          className={styles.editBtn}
-                        >
-                          <Edit3 size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteProduct(p.id)}
-                          className={styles.delBtn}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className={styles.boldText}>{p.name}</td>
+                        <td>{p.category}</td>
+                        <td>₦{p.price.toLocaleString()}</td>
+                        <td>
+                          <span
+                            className={p.quantity < 10 ? styles.lowStock : ""}
+                          >
+                            {p.quantity}
+                          </span>
+                        </td>
+                        <td>
+                          <div className={styles.actionGroup}>
+                            <button
+                              onClick={() => handleEditProduct(p)}
+                              className={styles.editBtn}
+                            >
+                              <Edit3 size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteProduct(p.id)}
+                              className={styles.delBtn}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </>
         ) : (
           <section className={styles.listSection}>
             <div className={styles.listHeader}>
-              <h3>Sales Manager Sells Records</h3>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                  TOTAL SELLS AMOUNT
-                </span>
-                <h2 style={{ color: "#10b981", margin: 0 }}>
-                  ₦{totalSalesRevenue.toLocaleString()}
-                </h2>
+              <div>
+                <h3>Sales Records</h3>
+                <p className={styles.subtitle}>
+                  Historical data of all items sold
+                </p>
               </div>
+              <button onClick={handleResetSales} className={styles.resetBtn}>
+                <RefreshCcw size={16} /> Reset All Sales
+              </button>
             </div>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Product</th>
-                  <th>Quantity</th>
-                  <th>Total Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sales.map((s) => (
-                  <tr key={s.id}>
-                    <td>{new Date(s.created_at).toLocaleDateString()}</td>
-                    <td>{s.product_name}</td>
-                    <td>{s.quantity}</td>
-                    <td>₦{s.total_price.toLocaleString()}</td>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Total Price</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sales.map((s) => (
+                    <tr key={s.id}>
+                      <td>{new Date(s.created_at).toLocaleDateString()}</td>
+                      <td className={styles.boldText}>{s.product_name}</td>
+                      <td>{s.quantity}</td>
+                      <td className={styles.priceText}>
+                        ₦{s.total_price.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
       </main>

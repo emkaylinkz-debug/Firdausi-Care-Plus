@@ -25,13 +25,13 @@
     align-items: center;
     gap: 10px;
     text-decoration: none;
+    z-index: 1001;
 }
 
 .logoText {
     font-size: 1.4rem;
     font-weight: 800;
     color: #059669;
-    /* Emerald 600 */
     letter-spacing: -0.5px;
 }
 
@@ -53,7 +53,22 @@
     color: #059669;
 }
 
-/* Status Indicator */
+.menuButton {
+    display: none;
+    background: #f0fdf4;
+    border: 1px solid #059669;
+    color: #059669;
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.mobileStatus {
+    display: none;
+}
+
+/* Status Indicator Settings */
 .statusBadge {
     display: flex;
     align-items: center;
@@ -62,19 +77,18 @@
     border-radius: 50px;
     font-size: 0.75rem;
     font-weight: 700;
-    border: 1px solid transparent;
 }
 
 .open {
     background: #ecfdf5;
     color: #065f46;
-    border-color: #a7f3d0;
+    border: 1px solid #a7f3d0;
 }
 
 .closed {
     background: #fef2f2;
     color: #991b1b;
-    border-color: #fecaca;
+    border: 1px solid #fecaca;
 }
 
 .dot {
@@ -110,55 +124,55 @@
     }
 }
 
-@media (max-width: 768px) {
-    .navLinks {
-        display: none;
-    }
-
-}
-
-/* Add to Header.module.css */
-
-.menuButton {
-    display: none;
-    background: none;
-    border: none;
-    color: #059669;
-    cursor: pointer;
-}
-
+/* MOBILE RESPONSIVENESS */
 @media (max-width: 768px) {
     .menuButton {
         display: block;
-        order: 2;
     }
 
     .statusBadge {
         display: none;
-        /* Hide status badge on small mobile to save space */
     }
 
-    .navLinks {
-        display: flex;
-        flex-direction: column;
-        position: absolute;
-        top: 80px;
-        left: 0;
-        width: 100%;
-        background: white;
-        padding: 20px;
-        border-bottom: 2px solid #059669;
-        transform: translateY(-150%);
-        transition: transform 0.3s ease-in-out;
-        z-index: -1;
-    }
-
-    .navActive {
-        transform: translateY(0);
-    }
+    /* Hide the big badge on mobile */
 
     .logoText {
         font-size: 1.1rem;
-        /* Smaller logo for mobile */
+    }
+
+    .navLinks {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 280px;
+        background: white;
+        flex-direction: column;
+        padding: 100px 30px;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        align-items: flex-start;
+        gap: 25px;
+    }
+
+    .navActive {
+        transform: translateX(0);
+    }
+
+    .navLinks a {
+        font-size: 1.2rem;
+        width: 100%;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mobileStatus {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 20px;
     }
 }
