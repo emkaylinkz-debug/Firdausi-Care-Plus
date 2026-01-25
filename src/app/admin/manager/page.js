@@ -1,81 +1,128 @@
 "use client";
-import { useEffect, useState, useCallback } from "react"; // Added useCallback
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import styles from "./manager.module.css";
-import { Search, ShoppingCart, RotateCcw, Printer, LogOut } from "lucide-react";
+import {
+  Search,
+  RotateCcw,
+  Printer,
+  LogOut,
+  User,
+  Phone,
+  AlertCircle,
+} from "lucide-react";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 export default function SalesManager() {
   const [products, setProducts] = useState([]);
   const [sales, setSales] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sellQuantities, setSellQuantities] = useState({});
+  const [customer, setCustomer] = useState({
+    name: "",
+    phone: "",
+    payment: "Cash",
+  });
+  const [pendingSale, setPendingSale] = useState(null);
 
-  // FIX: Define loadData BEFORE useEffect
-  // Use useCallback to prevent unnecessary re-renders
   const loadData = useCallback(async () => {
-    setLoading(true);
     try {
-      const [prodRes, salesRes] = await Promise.all([
+      const [pRes, sRes] = await Promise.all([
         supabase.from("products").select("*").order("name"),
         supabase
           .from("sales")
           .select("*")
           .order("created_at", { ascending: false }),
       ]);
-      setProducts(prodRes.data || []);
-      setSales(salesRes.data || []);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
+      setProducts(pRes.data || []);
+      setSales(sRes.data || []);
+    } catch (e) {
+      console.error("Load Error:", e);
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const { data: sRes } = await supabase
+          .from("sales")
+          .select("*")
+          .order("created_at", { ascending: false });
+        setSales(sRes.data || []);
+      } catch (e) {
+        console.error("Load Error:", e);
+      }
+      setLoading(false);
+    };
+
     loadData();
-  }, [loadData]); // This is now safe and error-free
+  }, []);
 
-  const handleQtyChange = (productId, val) => {
-    setSellQuantities({ ...sellQuantities, [productId]: parseInt(val) || 1 });
-  };
+  const handleSell = async () => {
+    if (!pendingSale) return;
+    const qty = sellQuantities[pendingSale.id] || 1;
+    const receiptNo = `RCP-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  const handleSell = async (product) => {
-    const qty = sellQuantities[product.id] || 1;
-    if (product.quantity < qty) return alert("Not enough stock!");
-
-    const { error: saleError } = await supabase.from("sales").insert([
+    // MATCHES YOUR SCHEMA EXACTLY: Removed unit_price
+    const { error } = await supabase.from("sales").insert([
       {
-        product_id: product.id,
-        product_name: product.name,
+        product_id: pendingSale.id,
+        product_name: pendingSale.name,
         quantity: qty,
-        total_price: product.price * qty,
+        total_price: pendingSale.price * qty, // Uses price from product
+        receipt_no: receiptNo,
+        customer_name: customer.name,
+        customer_phone: customer.phone,
+        payment_method: customer.payment,
+        status: "completed",
       },
     ]);
 
-    if (!saleError) {
+    if (error) {
+      alert("DATABASE ERROR: " + error.message);
+      console.error(error);
+    } else {
+      // Update stock
       await supabase
         .from("products")
-        .update({ quantity: product.quantity - qty })
-        .eq("id", product.id);
+        .update({ quantity: pendingSale.quantity - qty })
+        .eq("id", pendingSale.id);
+
+      alert("Sale Successful! Receipt #" + receiptNo);
+      setPendingSale(null);
       loadData();
-      alert("Sold successfully!");
     }
   };
 
   const handleRefund = async (sale) => {
-    if (!confirm("Process refund?")) return;
-    const { data: prod } = await supabase
-      .from("products")
-      .select("quantity")
-      .eq("id", sale.product_id)
-      .single();
-    if (prod) {
-      await supabase
+    if (!confirm("Proceed with refund?")) return;
+
+    // 1. Update Sale Status
+    const { error } = await supabase
+      .from("sales")
+      .update({ is_refunded: true })
+      .eq("id", sale.id);
+
+    if (error) {
+      alert("Refund Failed: " + error.message);
+    } else {
+      // 2. Put stock back
+      const { data: prod } = await supabase
         .from("products")
-        .update({ quantity: prod.quantity + sale.quantity })
-        .eq("id", sale.product_id);
-      await supabase.from("sales").delete().eq("id", sale.id);
+        .select("quantity")
+        .eq("id", sale.product_id)
+        .single();
+      if (prod) {
+        await supabase
+          .from("products")
+          .update({ quantity: prod.quantity + sale.quantity })
+          .eq("id", sale.product_id);
+      }
+      alert("Refund Processed.");
       loadData();
     }
   };
@@ -84,93 +131,129 @@ export default function SalesManager() {
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <div className={styles.loader}>Loading...</div>;
+  if (loading) return <div>Connecting to Firdausi Database...</div>;
 
   return (
     <div className={styles.container}>
+      {/* CONFIRMATION MODAL */}
+      {pendingSale && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <AlertCircle size={40} color="#3b82f6" />
+            <h3>Confirm Sale?</h3>
+            <p>
+              Sell {sellQuantities[pendingSale.id] || 1} of {pendingSale.name}?
+            </p>
+            <div className={styles.modalBtns}>
+              <button onClick={handleSell} className={styles.confirmBtn}>
+                Confirm
+              </button>
+              <button
+                onClick={() => setPendingSale(null)}
+                className={styles.cancelBtn}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className={styles.header}>
-        <h2>Sales Manager</h2>
-        <button onClick={() => window.print()} className={styles.printBtn}>
-          <Printer size={18} /> Print (PDF)
-        </button>
+        <h2>Sales Terminal</h2>
+        <div className={styles.customerBox}>
+          <input
+            placeholder="Customer Name"
+            value={customer.name}
+            onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+          />
+          <input
+            placeholder="Phone"
+            value={customer.phone}
+            onChange={(e) =>
+              setCustomer({ ...customer, phone: e.target.value })
+            }
+          />
+        </div>
       </header>
 
-      <main className={styles.mainGrid}>
+      <div className={styles.mainGrid}>
         <section className={styles.card}>
-          <h3>Inventory</h3>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>#</th> {/* Row Number Header */}
-                  <th>Product</th>
-                  <th>Stock</th>
-                  <th>Qty</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((p, index) => (
-                  <tr key={p.id}>
-                    <td>{index + 1}</td> {/* This gives you the row number */}
-                    <td>{p.name}</td>
-                    <td>{p.quantity}</td>
-                    <td>
-                      <input
-                        type="number"
-                        className={styles.qtyInput}
-                        value={sellQuantities[p.id] || 1}
-                        onChange={(e) => handleQtyChange(p.id, e.target.value)}
-                      />
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleSell(p)}
-                        className={styles.sellBtn}
-                      >
-                        Sell
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className={styles.searchBox}>
+            <input
+              placeholder="Search products..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Stock</th>
+                <th>Qty</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProducts.map((p) => (
+                <tr key={p.id}>
+                  <td>{p.name}</td>
+                  <td>{p.quantity}</td>
+                  <td>
+                    <input
+                      type="number"
+                      className={styles.qtyInput}
+                      defaultValue="1"
+                      onChange={(e) =>
+                        setSellQuantities({
+                          ...sellQuantities,
+                          [p.id]: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => setPendingSale(p)}
+                      className={styles.sellBtn}
+                    >
+                      Sell
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
 
         <section className={styles.card}>
-          <h3>Sales History</h3>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Item</th>
-                  <th>Total</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sales.map((s, index) => (
-                  <tr key={s.id}>
-                    <td>{index + 1}</td>
-                    <td>{s.product_name}</td>
-                    <td>₦{s.total_price.toLocaleString()}</td>
-                    <td>
-                      <button
-                        onClick={() => handleRefund(s)}
-                        className={styles.refundBtn}
-                      >
-                        <RotateCcw size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h3>History (Refunds)</h3>
+          {sales.map((s) => (
+            <div
+              key={s.id}
+              className={styles.historyItem}
+              style={{ opacity: s.is_refunded ? 0.5 : 1 }}
+            >
+              <div>
+                <strong>{s.product_name}</strong>
+                <br />
+                <small>{s.receipt_no}</small>
+              </div>
+              <div>
+                <span>₦{s.total_price.toLocaleString()}</span>
+                {!s.is_refunded && (
+                  <button
+                    onClick={() => handleRefund(s)}
+                    className={styles.refundBtn}
+                  >
+                    <RotateCcw size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </section>
-      </main>
+      </div>
     </div>
   );
 }

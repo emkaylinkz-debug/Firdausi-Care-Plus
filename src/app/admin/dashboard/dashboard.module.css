@@ -364,3 +364,13 @@
     color: #000705
     }
 }
+.lowStock {
+    color: #ef4444;
+    /* Bright Red */
+    font-weight: 800;
+    background-color: #fee2e2;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+}

@@ -15,8 +15,22 @@ import {
   LogOut,
   RefreshCcw,
   Image as ImageIcon,
-  AlertCircle,
+  AlertTriangle,
+  User,
 } from "lucide-react";
+
+// Updated professional categories
+const PHARMA_CATEGORIES = [
+  "Daily Health & Pain Relief",
+  "Vitamins & Supplements",
+  "Sexual Wellness & Family Planning",
+  "Mother & Child",
+  "Personal Care & Toiletries",
+  "Chronic Disease Management",
+  "Infectious Diseases",
+  "Healthcare Devices & Accessories",
+  "First Aid",
+];
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
@@ -32,9 +46,10 @@ export default function AdminDashboard() {
 
   const [formData, setFormData] = useState({
     name: "",
+    generic_name: "", // NEW
     price: "",
     quantity: "",
-    category: "",
+    category: PHARMA_CATEGORIES[0], // Default to first professional category
     description: "",
     image_url: "",
   });
@@ -72,58 +87,23 @@ export default function AdminDashboard() {
   }, [loadData]);
 
   /* ===============================
-      SALE & STOCK LOGIC
+      SALE & REFUND LOGIC
   ================================ */
-  // Function to reset all sales records
   const handleResetSales = async () => {
     const confirmation = confirm(
-      "CRITICAL: This will permanently delete ALL sales records. This cannot be undone. Continue?"
+      "CRITICAL: Delete ALL sales records? This cannot be undone."
     );
-
     if (confirmation) {
       setLoading(true);
-      try {
-        // Use .not("id", "is", null) to target every row in a UUID-based table
-        const { error } = await supabase
-          .from("sales")
-          .delete()
-          .not("id", "is", null);
-
-        if (error) throw error;
-
-        alert("Sales records cleared successfully.");
-        await loadData(); // Refresh the UI
-      } catch (error) {
-        console.error("Delete error:", error.message);
-        alert("Failed to clear sales: " + error.message);
-      } finally {
-        setLoading(false);
+      const { error } = await supabase
+        .from("sales")
+        .delete()
+        .not("id", "is", null);
+      if (!error) {
+        alert("Records cleared.");
+        await loadData();
       }
-    }
-  };
-
-  // Logic to handle a sale and reduce quantity
-  const handleManualSale = async (product, qtySold) => {
-    if (product.quantity < qtySold) return alert("Not enough stock!");
-
-    // 1. Record the Sale
-    const { error: saleError } = await supabase.from("sales").insert([
-      {
-        product_id: product.id,
-        product_name: product.name,
-        quantity: qtySold,
-        total_price: product.price * qtySold,
-      },
-    ]);
-
-    if (!saleError) {
-      // 2. Reduce Product Quantity
-      await supabase
-        .from("products")
-        .update({ quantity: product.quantity - qtySold })
-        .eq("id", product.id);
-
-      loadData();
+      setLoading(false);
     }
   };
 
@@ -134,9 +114,10 @@ export default function AdminDashboard() {
     setEditingId(product.id);
     setFormData({
       name: product.name,
+      generic_name: product.generic_name || "", // NEW
       price: product.price,
       quantity: product.quantity,
-      category: product.category,
+      category: product.category || PHARMA_CATEGORIES[0],
       description: product.description || "",
       image_url: product.image_url || "",
     });
@@ -186,9 +167,10 @@ export default function AdminDashboard() {
     setImageFile(null);
     setFormData({
       name: "",
+      generic_name: "",
       price: "",
       quantity: "",
-      category: "",
+      category: PHARMA_CATEGORIES[0],
       description: "",
       image_url: "",
     });
@@ -197,11 +179,15 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    window.location.href = "/admin";
   };
 
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // NEW: Search both Brand Name and Generic Name
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.generic_name &&
+        p.generic_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const totalInventoryValue = products.reduce(
@@ -235,7 +221,6 @@ export default function AdminDashboard() {
             Sales History
           </button>
         </nav>
-
         <button onClick={handleLogout} className={styles.logoutBtn}>
           <LogOut size={18} /> Logout
         </button>
@@ -246,7 +231,7 @@ export default function AdminDashboard() {
             {storeStatus.is_open ? "Store Open" : "Store Closed"}
           </div>
           <textarea
-            placeholder="Reason..."
+            placeholder="Reason for closing..."
             value={storeStatus.close_reason}
             onChange={(e) =>
               setStoreStatus({ ...storeStatus, close_reason: e.target.value })
@@ -294,13 +279,21 @@ export default function AdminDashboard() {
               className={styles.listSection}
               style={{ marginBottom: "30px" }}
             >
-              <h3>{editingId ? "Update Product" : "Create New Product"}</h3>
+              <h3>{editingId ? "Update Medicine" : "Register New Medicine"}</h3>
               <form onSubmit={handleSaveProduct} className={styles.prodForm}>
                 <input
-                  placeholder="Name"
+                  placeholder="Brand Name (e.g. Panadol)"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
+                  }
+                  required
+                />
+                <input
+                  placeholder="Generic Name (e.g. Paracetamol)"
+                  value={formData.generic_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, generic_name: e.target.value })
                   }
                   required
                 />
@@ -315,13 +308,14 @@ export default function AdminDashboard() {
                 />
                 <input
                   type="number"
-                  placeholder="Stock"
+                  placeholder="Stock Level"
                   value={formData.quantity}
                   onChange={(e) =>
                     setFormData({ ...formData, quantity: e.target.value })
                   }
                   required
                 />
+
                 <select
                   value={formData.category}
                   onChange={(e) =>
@@ -329,14 +323,16 @@ export default function AdminDashboard() {
                   }
                   required
                 >
-                  <option value="">Category</option>
-                  <option value="Painkillers">Painkillers</option>
-                  <option value="Antibiotics">Antibiotics</option>
-                  <option value="Supplements">Supplements</option>
+                  {PHARMA_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
+
                 <label className={styles.fileLabel}>
                   <ImageIcon size={18} />{" "}
-                  {imageFile ? imageFile.name : "Upload Image"}
+                  {imageFile ? imageFile.name : "Upload Product Image"}
                   <input
                     type="file"
                     className={styles.fileInput}
@@ -344,15 +340,17 @@ export default function AdminDashboard() {
                   />
                 </label>
                 <textarea
-                  placeholder="Description"
+                  placeholder="Usage description..."
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
                 />
+
                 <div className={styles.formButtons}>
                   <button type="submit" className={styles.saveBtn}>
-                    <Save size={18} /> {editingId ? "Update" : "Save"}
+                    <Save size={18} />{" "}
+                    {editingId ? "Update Product" : "Save Product"}
                   </button>
                   {editingId && (
                     <button
@@ -369,11 +367,11 @@ export default function AdminDashboard() {
 
             <section className={styles.listSection}>
               <div className={styles.listHeader}>
-                <h3>Product Records</h3>
+                <h3>Inventory Records</h3>
                 <div className={styles.searchBox}>
                   <Search size={18} />
                   <input
-                    placeholder="Search..."
+                    placeholder="Search Brand or Generic..."
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
@@ -383,10 +381,10 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Image</th>
-                      <th>Name</th>
+                      <th>Medicine Detail</th>
                       <th>Category</th>
                       <th>Price</th>
-                      <th>Stock</th>
+                      <th>Stock Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -402,14 +400,28 @@ export default function AdminDashboard() {
                             className={styles.productThumb}
                           />
                         </td>
-                        <td className={styles.boldText}>{p.name}</td>
-                        <td>{p.category}</td>
+                        <td>
+                          <div className={styles.boldText}>{p.name}</div>
+                          <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                            {p.generic_name}
+                          </div>
+                        </td>
+                        <td>
+                          <small>{p.category}</small>
+                        </td>
                         <td>₦{p.price.toLocaleString()}</td>
                         <td>
+                          {/* NEW: Stock Alert Threshold of 5 */}
                           <span
-                            className={p.quantity < 10 ? styles.lowStock : ""}
+                            className={p.quantity <= 5 ? styles.lowStock : ""}
                           >
-                            {p.quantity}
+                            {p.quantity}{" "}
+                            {p.quantity <= 5 && (
+                              <AlertTriangle
+                                size={14}
+                                style={{ marginLeft: 5 }}
+                              />
+                            )}
                           </span>
                         </td>
                         <td>
@@ -439,13 +451,13 @@ export default function AdminDashboard() {
           <section className={styles.listSection}>
             <div className={styles.listHeader}>
               <div>
-                <h3>Sales Records</h3>
+                <h3>Sales History</h3>
                 <p className={styles.subtitle}>
-                  Historical data of all items sold
+                  Audit logs of every customer transaction
                 </p>
               </div>
               <button onClick={handleResetSales} className={styles.resetBtn}>
-                <RefreshCcw size={16} /> Reset All Sales
+                <RefreshCcw size={16} /> Clear Logs
               </button>
             </div>
             <div className={styles.tableWrapper}>
@@ -453,6 +465,8 @@ export default function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Date</th>
+                    <th>Receipt #</th>
+                    <th>Customer</th>
                     <th>Product</th>
                     <th>Qty</th>
                     <th>Total Price</th>
@@ -460,12 +474,34 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {sales.map((s) => (
-                    <tr key={s.id}>
+                    <tr key={s.id} style={{ opacity: s.is_refunded ? 0.5 : 1 }}>
                       <td>{new Date(s.created_at).toLocaleDateString()}</td>
-                      <td className={styles.boldText}>{s.product_name}</td>
+                      <td>
+                        <code
+                          style={{ background: "#f1f5f9", padding: "2px 5px" }}
+                        >
+                          {s.receipt_no || "N/A"}
+                        </code>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: "0.85rem" }}>
+                          <User size={12} /> {s.customer_name || "Walk-in"}
+                        </div>
+                        <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+                          {s.customer_phone || "No Phone"}
+                        </div>
+                      </td>
+                      <td className={styles.boldText}>
+                        {s.product_name}
+                        {s.is_refunded && (
+                          <span style={{ color: "red", marginLeft: 10 }}>
+                            (REFUNDED)
+                          </span>
+                        )}
+                      </td>
                       <td>{s.quantity}</td>
                       <td className={styles.priceText}>
-                        ₦{s.total_price.toLocaleString()}
+                        ₦{s.total_price.toLocaleString()} ({s.payment_method})
                       </td>
                     </tr>
                   ))}
